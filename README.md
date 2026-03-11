@@ -1,106 +1,96 @@
-# ZK CRUD com Tomcat 10 + MySQL
+# ZK CRUD com Tomcat 10 e MySQL
 
 Projeto web Java com ZK Framework (MVVM), Maven, Tomcat 10 e MySQL.
 
 ## Requisitos
 
-- Java 11 ou superior
-- Maven 3.8 ou superior
+- Java 11+
+- Maven 3.8+
 - Tomcat 10
 - MySQL 8
 
-## Estrutura do projeto
+## Configuracao do banco
 
-- UI ZK: `src/main/webapp/index.zul`
-- Config web: `src/main/webapp/WEB-INF/web.xml` e `src/main/webapp/WEB-INF/zk.xml`
-- Config banco: `src/main/resources/db.properties`
-- Script SQL: `sql/schema.sql`
+### 1) Criar usuario, banco e permissoes
 
-## Credenciais do banco (como configurar)
-
-Edite o arquivo `src/main/resources/db.properties`:
-
-```properties
-jdbc.url=jdbc:mysql://localhost:3306/zkteste?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-jdbc.user=root
-jdbc.password=root
-jdbc.driver=com.mysql.cj.jdbc.Driver
-```
-
-Se sua senha do MySQL root nao for `root`, altere somente `jdbc.password`.
-
-## Criar banco e tabela
-
-No terminal, dentro da pasta do projeto:
-
-```bash
-mysql -u root -p < sql/schema.sql
-```
-
-Esse script cria:
-
-- banco `zkteste`
-- tabela `users`
-
-## Inserir dados no banco manualmente (opcional)
-
-Entre no MySQL:
+Entre no MySQL como `root`:
 
 ```bash
 mysql -u root -p
 ```
 
-Depois rode:
+Execute:
 
 ```sql
-USE zkteste;
-
-INSERT INTO users (name, email) VALUES
-('Ana Silva', 'ana@example.com'),
-('Carlos Santos', 'carlos@example.com');
-
-SELECT * FROM users;
+CREATE DATABASE IF NOT EXISTS zkteste;
+CREATE USER IF NOT EXISTS 'zkteste_user'@'localhost' IDENTIFIED BY 'zkteste_user';
+GRANT ALL PRIVILEGES ON zkteste.* TO 'zkteste_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
 ```
 
-## Build do projeto
+### 2) Criar tabela
 
-Gere o WAR:
+Na pasta do projeto, rode:
+
+```bash
+mysql -u zkteste_user -pzkteste_user zkteste < sql/schema.sql
+```
+
+### 3) Credenciais da aplicacao
+
+Arquivo: `src/main/resources/db.properties`
+
+```properties
+jdbc.url=jdbc:mysql://localhost:3306/zkteste?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+jdbc.user=zkteste_user
+jdbc.password=zkteste_user
+jdbc.driver=com.mysql.cj.jdbc.Driver
+```
+
+## Como rodar o programa
+
+### 1) Build
 
 ```bash
 mvn clean package -DskipTests
 ```
 
-Arquivo gerado:
+Gera o arquivo:
 
 - `target/zkteste.war`
 
-## Deploy no Tomcat 10 (Ubuntu/Debian)
-
-No seu ambiente, o deploy e feito em ` /var/lib/tomcat10/webapps/ `.
+### 2) Deploy no Tomcat 10
 
 ```bash
 sudo cp target/zkteste.war /var/lib/tomcat10/webapps/
 sudo systemctl restart tomcat10
 ```
 
-## Acesso da aplicacao
+### 3) Verificar se subiu
 
-Abra no navegador:
+```bash
+sudo systemctl status tomcat10 --no-pager
+```
+
+### 4) Abrir no navegador
 
 - `http://localhost:8080/zkteste/`
 
-## Como usar o CRUD
+## Uso rapido do CRUD
 
 - `Adicionar`: preencha nome/email e clique em adicionar
-- `Atualizar`: clique em uma linha da lista, edite os campos e clique em atualizar
+- `Atualizar`: selecione uma linha, altere os campos e clique em atualizar
 - `Excluir`: selecione uma linha e clique em excluir
 - `Limpar`: limpa selecao e formulario
 
 ## Problemas comuns
 
-- Erro `Access denied for user 'root'@'localhost'`:
-  - senha em `db.properties` diferente da senha real do MySQL
-  - ajuste `jdbc.password` e gere/deploy novamente
+- `Access denied for user 'zkteste_user'@'localhost'`:
+  - a senha no `db.properties` esta diferente da senha real do MySQL
+  - para redefinir:
+    - `ALTER USER 'zkteste_user'@'localhost' IDENTIFIED BY 'zkteste_user';`
+    - `FLUSH PRIVILEGES;`
 
-- WAR nao encontrado:
-  - rode `mvn clean package -DskipTests` antes do `cp`
+- `target/zkteste.war` nao existe:
+  - rode `mvn clean package -DskipTests` antes do deploy
