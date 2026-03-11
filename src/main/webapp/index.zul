@@ -1,0 +1,45 @@
+<?page title="ZK CRUD Usuarios" contentType="text/html;charset=UTF-8"?>
+<zk>
+    <window title="Cadastro de Usuarios"
+            border="normal"
+            width="900px"
+            apply="org.zkoss.bind.BindComposer"
+            viewModel="@id('vm') @init('org.example.vm.UserViewModel')">
+        <vlayout spacing="12px" hflex="1">
+            <grid model="@load(vm.users)" hflex="1" emptyMessage="Nenhum usuario cadastrado.">
+                <columns sizable="true">
+                    <column label="ID" width="80px"/>
+                    <column label="Nome"/>
+                    <column label="Email"/>
+                </columns>
+                <template name="model" var="each">
+                    <row onClick="@command('selectUser', user=each)">
+                        <label value="@load(each.id)"/>
+                        <label value="@load(each.name)"/>
+                        <label value="@load(each.email)"/>
+                    </row>
+                </template>
+            </grid>
+
+            <separator/>
+
+            <hlayout spacing="10px">
+                <vlayout>
+                    <label value="Nome"/>
+                    <textbox width="280px" value="@bind(vm.formName)"/>
+                </vlayout>
+                <vlayout>
+                    <label value="Email"/>
+                    <textbox width="280px" value="@bind(vm.formEmail)"/>
+                </vlayout>
+            </hlayout>
+
+            <hlayout spacing="8px">
+                <button label="Adicionar" onClick="@command('addUser')"/>
+                <button label="Atualizar" onClick="@command('updateUser')"/>
+                <button label="Excluir" onClick="@command('deleteUser')"/>
+                <button label="Limpar" onClick="@command('clearForm')"/>
+            </hlayout>
+        </vlayout>
+    </window>
+</zk>

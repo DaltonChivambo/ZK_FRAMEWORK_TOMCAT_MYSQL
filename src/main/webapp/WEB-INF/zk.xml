@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk>
+    <system-config>
+        <disable-event-thread>true</disable-event-thread>
+    </system-config>
+</zk>
