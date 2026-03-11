@@ -1,0 +1,67 @@
+<?page title="Mini Jira - Login" contentType="text/html;charset=UTF-8"?>
+<zk>
+    <style>
+        .login-bg {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #102a43 0%, #334e68 45%, #486581 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            border-radius: 16px;
+            border: 1px solid #d9e2ec;
+            background: #ffffff;
+            box-shadow: 0 20px 46px rgba(16, 42, 67, 0.35);
+            padding: 22px;
+        }
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            color: #102a43;
+        }
+        .sub {
+            color: #486581;
+        }
+        .label {
+            font-weight: 600;
+            color: #243b53;
+        }
+    </style>
+
+    <div sclass="login-bg">
+        <window border="none"
+                sclass="login-card"
+                apply="org.zkoss.bind.BindComposer"
+                viewModel="@id('vm') @init('org.example.vm.LoginViewModel')">
+            <vlayout spacing="12px" hflex="1">
+                <label value="Mini Jira" sclass="brand"/>
+                <label value="Acesse com seu usuario para continuar." sclass="sub"/>
+
+                <separator bar="true"/>
+
+                <vlayout spacing="6px">
+                    <label value="Email" sclass="label"/>
+                    <textbox hflex="1" value="@bind(vm.email)" placeholder="email@empresa.com"/>
+                </vlayout>
+
+                <vlayout spacing="6px">
+                    <label value="Senha" sclass="label"/>
+                    <textbox hflex="1" type="password" value="@bind(vm.password)" placeholder="Sua senha"/>
+                </vlayout>
+
+                <button label="Entrar"
+                        mold="trendy"
+                        onClick="@command('login')"
+                        style="margin-top: 8px;"/>
+
+                <separator/>
+                <label value="Seeds iniciais: admin@zkteste.local / admin123 | pm@zkteste.local / pm123 | user@zkteste.local / user123"
+                       style="font-size: 11px; color: #627d98;"/>
+            </vlayout>
+        </window>
+    </div>
+</zk>

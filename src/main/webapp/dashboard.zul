@@ -1,0 +1,113 @@
+<?page title="Mini Jira - Dashboard" contentType="text/html;charset=UTF-8"?>
+<zk>
+    <style>
+        html, body { margin: 0; height: 100%; }
+        .layoutRoot { height: 100vh; background: #f3f6fb; overflow: hidden; }
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            height: 100vh;
+            background: linear-gradient(180deg, #1b2942 0%, #213b5f 100%);
+            color: #dfe7f2;
+            padding: 20px 14px;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
+        }
+        .sideTitle { font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 16px; }
+        .sideLink { display: block; padding: 10px 12px; border-radius: 10px; color: #dfe7f2; text-decoration: none; }
+        .sideLink:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+        .active { background: #2e5aac; color: #ffffff; box-shadow: 0 6px 14px rgba(12, 42, 95, 0.35); }
+        .mainPane { height: 100vh; }
+        .topbar { background: #ffffff; border-bottom: 1px solid #dde5f0; padding: 12px 18px; box-shadow: 0 1px 6px rgba(15, 35, 80, 0.06); }
+        .content { padding: 16px; }
+        .contentScroll { overflow: auto; }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e0e7f2;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 10px 22px rgba(20, 44, 94, 0.07);
+        }
+        .sectionTitle { font-size: 16px; font-weight: 700; color: #172b4d; }
+        .muted { color: #5e6c84; font-size: 12px; }
+    </style>
+
+    <hlayout hflex="1" sclass="layoutRoot" apply="org.zkoss.bind.BindComposer"
+             viewModel="@id('vm') @init('org.example.vm.DashboardViewModel', page='dashboard')">
+        <vlayout sclass="sidebar" spacing="8px">
+            <label value="Mini Jira" sclass="sideTitle"/>
+            <a sclass="sideLink active" href="/dashboard.zul" label="Dashboard"/>
+            <a sclass="sideLink" href="/projects-issues.zul" label="Projetos e Issues"/>
+            <a sclass="sideLink" href="/admin-users.zul" label="Usuarios" visible="@load(vm.admin)"/>
+        </vlayout>
+
+        <vlayout hflex="1" spacing="0" sclass="mainPane">
+            <hlayout hflex="1" valign="middle" sclass="topbar">
+                <label value="@load(vm.welcomeText)" style="font-weight:700; color:#172b4d;"/>
+                <space hflex="1"/>
+                <label value="@load('Role: '.concat(vm.roleDisplay))" sclass="muted"/>
+                <button label="Atualizar" onClick="@command('refresh')" style="margin-left:8px;"/>
+                <button label="Sair" onClick="@command('logout')" style="margin-left:6px;"/>
+            </hlayout>
+
+            <vlayout hflex="1" spacing="12px" sclass="content contentScroll">
+                <vlayout hflex="1" sclass="card" spacing="10px">
+                    <label value="Resumo de Status" sclass="sectionTitle"/>
+                    <label value="Visao executiva das issues no seu contexto de acesso." sclass="muted"/>
+
+                    <hlayout hflex="1" spacing="10px">
+                        <vlayout hflex="1" style="background:#f4f5f7; border-radius:10px; padding:10px;">
+                            <label value="TODO" style="font-weight:700; color:#42526e;"/>
+                            <label value="@load(vm.todoCount)" style="font-size:24px; font-weight:700; color:#172b4d;"/>
+                            <label value="@load(vm.todoPercentLabel)" sclass="muted"/>
+                        </vlayout>
+                        <vlayout hflex="1" style="background:#f4f5f7; border-radius:10px; padding:10px;">
+                            <label value="IN PROGRESS" style="font-weight:700; color:#42526e;"/>
+                            <label value="@load(vm.inProgressCount)" style="font-size:24px; font-weight:700; color:#172b4d;"/>
+                            <label value="@load(vm.inProgressPercentLabel)" sclass="muted"/>
+                        </vlayout>
+                        <vlayout hflex="1" style="background:#f4f5f7; border-radius:10px; padding:10px;">
+                            <label value="DONE" style="font-weight:700; color:#42526e;"/>
+                            <label value="@load(vm.doneCount)" style="font-size:24px; font-weight:700; color:#172b4d;"/>
+                            <label value="@load(vm.donePercentLabel)" sclass="muted"/>
+                        </vlayout>
+                    </hlayout>
+
+                    <separator bar="true"/>
+                    <label value="@load(vm.totalIssuesLabel)" sclass="muted"/>
+                    <vlayout spacing="6px">
+                        <label value="@load(vm.todoProgressLabel)" sclass="muted"/>
+                        <progressmeter value="@load(vm.todoPercent)" hflex="1"/>
+                        <label value="@load(vm.inProgressProgressLabel)" sclass="muted"/>
+                        <progressmeter value="@load(vm.inProgressPercent)" hflex="1"/>
+                        <label value="@load(vm.doneProgressLabel)" sclass="muted"/>
+                        <progressmeter value="@load(vm.donePercent)" hflex="1"/>
+                    </vlayout>
+                </vlayout>
+
+                <vlayout hflex="1" sclass="card" spacing="8px">
+                    <hlayout hflex="1" valign="middle">
+                        <label value="Issues Recentes" sclass="sectionTitle"/>
+                        <space hflex="1"/>
+                        <a href="/projects-issues.zul" label="Ir para Projetos e Issues"/>
+                    </hlayout>
+                    <listbox model="@load(vm.issues)" mold="paging" pageSize="8" hflex="1" emptyMessage="Sem issues no momento.">
+                        <listhead>
+                            <listheader label="Projeto"/>
+                            <listheader label="Titulo"/>
+                            <listheader label="Status"/>
+                            <listheader label="Responsavel"/>
+                        </listhead>
+                        <template name="model" var="each">
+                            <listitem>
+                                <listcell label="@load(each.projectName)"/>
+                                <listcell label="@load(each.title)"/>
+                                <listcell label="@load(each.status)"/>
+                                <listcell label="@load(each.assigneeName)"/>
+                            </listitem>
+                        </template>
+                    </listbox>
+                </vlayout>
+            </vlayout>
+        </vlayout>
+    </hlayout>
+</zk>

@@ -1,0 +1,149 @@
+<?page title="Mini Jira - Projetos e Issues" contentType="text/html;charset=UTF-8"?>
+<zk>
+    <style>
+        html, body { margin: 0; height: 100%; }
+        .layoutRoot { height: 100vh; background: #f3f6fb; overflow: hidden; }
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            height: 100vh;
+            background: linear-gradient(180deg, #1b2942 0%, #213b5f 100%);
+            color: #dfe7f2;
+            padding: 20px 14px;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
+        }
+        .sideTitle { font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 16px; }
+        .sideLink { display: block; padding: 10px 12px; border-radius: 10px; color: #dfe7f2; text-decoration: none; }
+        .sideLink:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+        .active { background: #2e5aac; color: #ffffff; box-shadow: 0 6px 14px rgba(12, 42, 95, 0.35); }
+        .mainPane { height: 100vh; }
+        .topbar { background: #ffffff; border-bottom: 1px solid #dde5f0; padding: 12px 18px; box-shadow: 0 1px 6px rgba(15, 35, 80, 0.06); }
+        .content { padding: 16px; }
+        .contentScroll { overflow: auto; }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e0e7f2;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 10px 22px rgba(20, 44, 94, 0.07);
+        }
+        .sectionTitle { font-size: 16px; font-weight: 700; color: #172b4d; }
+        .muted { color: #5e6c84; font-size: 12px; }
+        .formLabel { font-size: 12px; font-weight: 700; color: #42526e; }
+    </style>
+
+    <hlayout hflex="1" sclass="layoutRoot" apply="org.zkoss.bind.BindComposer"
+             viewModel="@id('vm') @init('org.example.vm.DashboardViewModel', page='projects-issues')">
+        <vlayout sclass="sidebar" spacing="8px">
+            <label value="Mini Jira" sclass="sideTitle"/>
+            <a sclass="sideLink" href="/dashboard.zul" label="Dashboard"/>
+            <a sclass="sideLink active" href="/projects-issues.zul" label="Projetos e Issues"/>
+            <a sclass="sideLink" href="/admin-users.zul" label="Usuarios" visible="@load(vm.admin)"/>
+        </vlayout>
+
+        <vlayout hflex="1" spacing="0" sclass="mainPane">
+            <hlayout hflex="1" valign="middle" sclass="topbar">
+                <label value="@load(vm.welcomeText)" style="font-weight:700; color:#172b4d;"/>
+                <space hflex="1"/>
+                <label value="@load('Role: '.concat(vm.roleDisplay))" sclass="muted"/>
+                <button label="Atualizar" onClick="@command('refresh')" style="margin-left:8px;"/>
+                <button label="Sair" onClick="@command('logout')" style="margin-left:6px;"/>
+            </hlayout>
+
+            <vlayout hflex="1" spacing="12px" sclass="content contentScroll">
+                <hlayout hflex="1" spacing="12px">
+                    <vlayout hflex="1" sclass="card" spacing="8px">
+                        <label value="Projetos" sclass="sectionTitle"/>
+                        <listbox model="@load(vm.projects)" mold="paging" pageSize="8" hflex="1" emptyMessage="Sem projetos cadastrados.">
+                            <listhead>
+                                <listheader label="Projeto"/>
+                                <listheader label="Manager"/>
+                                <listheader label="Descricao"/>
+                            </listhead>
+                            <template name="model" var="each">
+                                <listitem>
+                                    <listcell label="@load(each.name)"/>
+                                    <listcell label="@load(each.managerName)"/>
+                                    <listcell label="@load(each.description)"/>
+                                </listitem>
+                            </template>
+                        </listbox>
+                    </vlayout>
+
+                    <vlayout sclass="card" spacing="8px" visible="@load(vm.canManageWork)" style="min-width:320px; width:34%;">
+                        <label value="Novo Projeto" sclass="sectionTitle"/>
+                        <label value="Planeje entregas e distribua trabalho por projeto." sclass="muted"/>
+                        <label value="Nome" sclass="formLabel"/>
+                        <textbox hflex="1" value="@bind(vm.newProjectName)"/>
+                        <label value="Descricao" sclass="formLabel"/>
+                        <textbox hflex="1" multiline="true" rows="4" value="@bind(vm.newProjectDescription)"/>
+                        <button label="Criar Projeto" onClick="@command('createProject')"/>
+                    </vlayout>
+                </hlayout>
+
+                <hlayout hflex="1" spacing="12px">
+                    <vlayout hflex="1" sclass="card" spacing="8px">
+                        <label value="Issues" sclass="sectionTitle"/>
+                        <hlayout hflex="1" valign="middle">
+                            <space hflex="1"/>
+                            <combobox readonly="true" model="@load(vm.issueStatusOptions)" selectedItem="@bind(vm.selectedIssueStatus)" width="160px">
+                                <template name="model" var="each">
+                                    <comboitem label="@load(each)" value="@load(each)"/>
+                                </template>
+                            </combobox>
+                            <button label="Atualizar Status" onClick="@command('updateIssueStatus')" style="margin-left:8px;"/>
+                        </hlayout>
+                        <listbox model="@load(vm.issues)" mold="paging" pageSize="10" hflex="1" emptyMessage="Sem issues no momento.">
+                            <listhead>
+                                <listheader label="ID" width="70px"/>
+                                <listheader label="Projeto"/>
+                                <listheader label="Titulo"/>
+                                <listheader label="Status"/>
+                                <listheader label="Prioridade"/>
+                                <listheader label="Responsavel"/>
+                            </listhead>
+                            <template name="model" var="each">
+                                <listitem onClick="@command('selectIssue', issue=each)">
+                                    <listcell label="@load(each.id)"/>
+                                    <listcell label="@load(each.projectName)"/>
+                                    <listcell label="@load(each.title)"/>
+                                    <listcell label="@load(each.status)"/>
+                                    <listcell label="@load(each.priority)"/>
+                                    <listcell label="@load(each.assigneeName)"/>
+                                </listitem>
+                            </template>
+                        </listbox>
+                    </vlayout>
+
+                    <vlayout sclass="card" spacing="8px" visible="@load(vm.canManageWork)" style="min-width:320px; width:34%;">
+                        <label value="Nova Issue" sclass="sectionTitle"/>
+                        <label value="Fluxo rapido para criar e atribuir tarefas." sclass="muted"/>
+                        <label value="Projeto" sclass="formLabel"/>
+                        <combobox hflex="1" readonly="true" model="@load(vm.projects)" selectedItem="@bind(vm.selectedProject)">
+                            <template name="model" var="each">
+                                <comboitem label="@load(each.name)" value="@load(each)"/>
+                            </template>
+                        </combobox>
+                        <label value="Responsavel" sclass="formLabel"/>
+                        <combobox hflex="1" readonly="true" model="@load(vm.assignableUsers)" selectedItem="@bind(vm.selectedAssignee)">
+                            <template name="model" var="each">
+                                <comboitem label="@load(each.name)" value="@load(each)"/>
+                            </template>
+                        </combobox>
+                        <label value="Prioridade" sclass="formLabel"/>
+                        <combobox hflex="1" readonly="true" model="@load(vm.priorityOptions)" selectedItem="@bind(vm.newIssuePriority)">
+                            <template name="model" var="each">
+                                <comboitem label="@load(each)" value="@load(each)"/>
+                            </template>
+                        </combobox>
+                        <label value="Titulo" sclass="formLabel"/>
+                        <textbox hflex="1" value="@bind(vm.newIssueTitle)" placeholder="Ex.: Corrigir login PM"/>
+                        <label value="Descricao" sclass="formLabel"/>
+                        <textbox hflex="1" multiline="true" rows="4" value="@bind(vm.newIssueDescription)"/>
+                        <button label="Criar Issue" onClick="@command('createIssue')"/>
+                    </vlayout>
+                </hlayout>
+            </vlayout>
+        </vlayout>
+    </hlayout>
+</zk>

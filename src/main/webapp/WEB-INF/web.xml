@@ -4,10 +4,10 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
 
-    <display-name>ZK CRUD Example</display-name>
+    <display-name>Mini Jira ZK</display-name>
 
     <welcome-file-list>
-        <welcome-file>index.zul</welcome-file>
+        <welcome-file>login.zul</welcome-file>
     </welcome-file-list>
 
 </web-app>

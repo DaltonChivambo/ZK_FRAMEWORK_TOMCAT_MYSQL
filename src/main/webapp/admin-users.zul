@@ -1,0 +1,97 @@
+<?page title="Mini Jira - Usuarios" contentType="text/html;charset=UTF-8"?>
+<zk>
+    <style>
+        html, body { margin: 0; height: 100%; }
+        .layoutRoot { height: 100vh; background: #f3f6fb; overflow: hidden; }
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            height: 100vh;
+            background: linear-gradient(180deg, #1b2942 0%, #213b5f 100%);
+            color: #dfe7f2;
+            padding: 20px 14px;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
+        }
+        .sideTitle { font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 16px; }
+        .sideLink { display: block; padding: 10px 12px; border-radius: 10px; color: #dfe7f2; text-decoration: none; }
+        .sideLink:hover { background: rgba(255,255,255,0.08); color: #ffffff; }
+        .active { background: #2e5aac; color: #ffffff; box-shadow: 0 6px 14px rgba(12, 42, 95, 0.35); }
+        .mainPane { height: 100vh; }
+        .topbar { background: #ffffff; border-bottom: 1px solid #dde5f0; padding: 12px 18px; box-shadow: 0 1px 6px rgba(15, 35, 80, 0.06); }
+        .content { padding: 16px; }
+        .contentScroll { overflow: auto; }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e0e7f2;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 10px 22px rgba(20, 44, 94, 0.07);
+        }
+        .sectionTitle { font-size: 16px; font-weight: 700; color: #172b4d; }
+        .muted { color: #5e6c84; font-size: 12px; }
+    </style>
+
+    <hlayout hflex="1" sclass="layoutRoot" apply="org.zkoss.bind.BindComposer"
+             viewModel="@id('vm') @init('org.example.vm.DashboardViewModel', page='admin-users')">
+        <vlayout sclass="sidebar" spacing="8px">
+            <label value="Mini Jira" sclass="sideTitle"/>
+            <a sclass="sideLink" href="/dashboard.zul" label="Dashboard"/>
+            <a sclass="sideLink" href="/projects-issues.zul" label="Projetos e Issues"/>
+            <a sclass="sideLink active" href="/admin-users.zul" label="Usuarios"/>
+        </vlayout>
+
+        <vlayout hflex="1" spacing="0" sclass="mainPane">
+            <hlayout hflex="1" valign="middle" sclass="topbar">
+                <label value="@load(vm.welcomeText)" style="font-weight:700; color:#172b4d;"/>
+                <space hflex="1"/>
+                <label value="@load('Role: '.concat(vm.roleDisplay))" sclass="muted"/>
+                <button label="Atualizar" onClick="@command('refresh')" style="margin-left:8px;"/>
+                <button label="Sair" onClick="@command('logout')" style="margin-left:6px;"/>
+            </hlayout>
+
+            <vlayout hflex="1" spacing="12px" sclass="content contentScroll">
+                <vlayout hflex="1" sclass="card" spacing="8px">
+                    <label value="Administracao de Usuarios" sclass="sectionTitle"/>
+                    <label value="Somente ADMIN pode criar usuarios e alterar roles." sclass="muted"/>
+                    <hlayout spacing="8px" style="flex-wrap: wrap;">
+                        <textbox width="180px" value="@bind(vm.newUserName)" placeholder="Nome"/>
+                        <textbox width="220px" value="@bind(vm.newUserEmail)" placeholder="Email"/>
+                        <textbox width="150px" type="password" value="@bind(vm.newUserPassword)" placeholder="Senha"/>
+                        <combobox width="170px" readonly="true" model="@load(vm.roleOptions)" selectedItem="@bind(vm.newUserRole)">
+                            <template name="model" var="each">
+                                <comboitem label="@load(each)" value="@load(each)"/>
+                            </template>
+                        </combobox>
+                        <button label="Criar Usuario" onClick="@command('createUser')"/>
+                    </hlayout>
+                </vlayout>
+
+                <vlayout hflex="1" sclass="card" spacing="8px">
+                    <listbox model="@load(vm.users)" selectedItem="@bind(vm.selectedUser)" mold="paging" pageSize="10" hflex="1">
+                        <listhead>
+                            <listheader label="Nome"/>
+                            <listheader label="Email"/>
+                            <listheader label="Role"/>
+                        </listhead>
+                        <template name="model" var="each">
+                            <listitem>
+                                <listcell label="@load(each.name)"/>
+                                <listcell label="@load(each.email)"/>
+                                <listcell label="@load(each.role)"/>
+                            </listitem>
+                        </template>
+                    </listbox>
+                    <hlayout>
+                        <label value="Nova role para selecionado:" sclass="muted"/>
+                        <combobox width="170px" readonly="true" model="@load(vm.roleOptions)" selectedItem="@bind(vm.newUserRole)">
+                            <template name="model" var="each">
+                                <comboitem label="@load(each)" value="@load(each)"/>
+                            </template>
+                        </combobox>
+                        <button label="Atualizar Role" onClick="@command('changeRole')"/>
+                    </hlayout>
+                </vlayout>
+            </vlayout>
+        </vlayout>
+    </hlayout>
+</zk>
