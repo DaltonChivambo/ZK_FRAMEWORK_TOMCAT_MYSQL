@@ -1,45 +1,111 @@
 <?page title="ZK CRUD Usuarios" contentType="text/html;charset=UTF-8"?>
 <zk>
-    <window title="Cadastro de Usuarios"
-            border="normal"
-            width="900px"
-            apply="org.zkoss.bind.BindComposer"
-            viewModel="@id('vm') @init('org.example.vm.UserViewModel')">
-        <vlayout spacing="12px" hflex="1">
-            <grid model="@load(vm.users)" hflex="1" emptyMessage="Nenhum usuario cadastrado.">
-                <columns sizable="true">
-                    <column label="ID" width="80px"/>
-                    <column label="Nome"/>
-                    <column label="Email"/>
-                </columns>
-                <template name="model" var="each">
-                    <row onClick="@command('selectUser', user=each)">
-                        <label value="@load(each.id)"/>
-                        <label value="@load(each.name)"/>
-                        <label value="@load(each.email)"/>
-                    </row>
-                </template>
-            </grid>
+    <style>
+        .page-bg {
+            background: #f5f7fb;
+            min-height: 100vh;
+            padding: 20px 12px;
+        }
+        .shell-card {
+            max-width: 1040px;
+            margin: 0 auto;
+            border-radius: 14px;
+            border: 1px solid #e5e9f2;
+            background: #ffffff;
+            box-shadow: 0 8px 28px rgba(11, 35, 80, 0.08);
+        }
+        .hero {
+            padding: 18px 20px 10px;
+            border-bottom: 1px solid #edf0f6;
+        }
+        .hero-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #17223b;
+        }
+        .hero-sub {
+            color: #4f5d75;
+            margin-top: 4px;
+        }
+        .content {
+            padding: 18px 20px 20px;
+        }
+        .section-title {
+            font-weight: 600;
+            color: #1f2a44;
+        }
+        .field-label {
+            font-weight: 600;
+            color: #25324a;
+            margin-bottom: 4px;
+        }
+        .hint {
+            color: #60708f;
+            font-size: 12px;
+        }
+    </style>
 
-            <separator/>
+    <div sclass="page-bg">
+        <window border="none"
+                sclass="shell-card"
+                hflex="1"
+                apply="org.zkoss.bind.BindComposer"
+                viewModel="@id('vm') @init('org.example.vm.UserViewModel')">
 
-            <hlayout spacing="10px">
-                <vlayout>
-                    <label value="Nome"/>
-                    <textbox width="280px" value="@bind(vm.formName)"/>
-                </vlayout>
-                <vlayout>
-                    <label value="Email"/>
-                    <textbox width="280px" value="@bind(vm.formEmail)"/>
-                </vlayout>
-            </hlayout>
+            <vlayout sclass="hero" hflex="1">
+                <label value="Cadastro de Usuarios" sclass="hero-title"/>
+                <label value="Interface simples, limpa e responsiva para gerenciar usuarios." sclass="hero-sub"/>
+            </vlayout>
 
-            <hlayout spacing="8px">
-                <button label="Adicionar" onClick="@command('addUser')"/>
-                <button label="Atualizar" onClick="@command('updateUser')"/>
-                <button label="Excluir" onClick="@command('deleteUser')"/>
-                <button label="Limpar" onClick="@command('clearForm')"/>
-            </hlayout>
-        </vlayout>
-    </window>
+            <vlayout spacing="14px" hflex="1" sclass="content">
+                <hlayout hflex="1" valign="middle">
+                    <label value="Usuarios cadastrados" sclass="section-title"/>
+                    <space hflex="1"/>
+                    <label value="@load(vm.selectedUser == null ? 'Selecione um registro para editar ou excluir.' : 'Registro selecionado: '.concat(vm.selectedUser.name))"
+                           sclass="hint"/>
+                </hlayout>
+
+                <listbox model="@load(vm.users)"
+                         hflex="1"
+                         mold="paging"
+                         pageSize="8"
+                         emptyMessage="Nenhum usuario cadastrado."
+                         style="border-radius: 10px; border: 1px solid #e4e9f3;">
+                    <listhead sizable="true">
+                        <listheader label="ID" width="80px"/>
+                        <listheader label="Nome"/>
+                        <listheader label="Email"/>
+                    </listhead>
+                    <template name="model" var="each">
+                        <listitem onClick="@command('selectUser', user=each)">
+                            <listcell label="@load(each.id)"/>
+                            <listcell label="@load(each.name)"/>
+                            <listcell label="@load(each.email)"/>
+                        </listitem>
+                    </template>
+                </listbox>
+
+                <separator bar="true"/>
+
+                <label value="Formulario" sclass="section-title"/>
+                <hlayout hflex="1" spacing="12px" style="flex-wrap: wrap;">
+                    <vlayout hflex="1" style="min-width: 220px;">
+                        <label value="Nome" sclass="field-label"/>
+                        <textbox hflex="1" value="@bind(vm.formName)" placeholder="Digite o nome completo"/>
+                    </vlayout>
+                    <vlayout hflex="1" style="min-width: 220px;">
+                        <label value="Email" sclass="field-label"/>
+                        <textbox hflex="1" value="@bind(vm.formEmail)" placeholder="nome@empresa.com"/>
+                    </vlayout>
+                </hlayout>
+
+                <hlayout spacing="8px" style="flex-wrap: wrap;">
+                    <button label="Adicionar" sclass="btn btn-primary" onClick="@command('addUser')"/>
+                    <button label="Atualizar" disabled="@load(vm.selectedUser == null)" onClick="@command('updateUser')"/>
+                    <button label="Excluir" disabled="@load(vm.selectedUser == null)" onClick="@command('deleteUser')"/>
+                    <button label="Limpar" onClick="@command('clearForm')"/>
+                </hlayout>
+            </vlayout>
+        </window>
+    </div>
 </zk>
