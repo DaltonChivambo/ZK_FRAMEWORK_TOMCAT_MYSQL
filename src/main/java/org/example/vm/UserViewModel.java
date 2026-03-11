@@ -9,7 +9,14 @@ import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zul.ListModelList;
 import org.zkoss.zk.ui.util.Clients;
 
+import java.util.regex.Pattern;
+
 public class UserViewModel {
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    private static final Pattern NAME_PATTERN =
+            Pattern.compile("^[\\p{L}][\\p{L} .'-]{1,79}$");
+
     private final UserService userService = new UserService();
 
     private final ListModelList<User> users = new ListModelList<>();
@@ -23,7 +30,7 @@ public class UserViewModel {
     }
 
     @Command
-    @NotifyChange({"selectedUser", "formName", "formEmail"})
+    @NotifyChange({"selectedUser", "formName", "formEmail", "selectionHint", "actionButtonsDisabled"})
     public void selectUser(@BindingParam("user") User user) {
         this.selectedUser = user;
         this.formName = user.getName();
@@ -31,10 +38,11 @@ public class UserViewModel {
     }
 
     @Command
-    @NotifyChange({"users", "selectedUser", "formName", "formEmail"})
+    @NotifyChange({"users", "selectedUser", "formName", "formEmail", "selectionHint", "actionButtonsDisabled"})
     public void addUser() {
-        if (!isValidForm()) {
-            Clients.showNotification("Preencha nome e email.");
+        String validationError = validateForm();
+        if (validationError != null) {
+            Clients.showNotification(validationError);
             return;
         }
 
@@ -45,14 +53,15 @@ public class UserViewModel {
     }
 
     @Command
-    @NotifyChange({"users", "selectedUser", "formName", "formEmail"})
+    @NotifyChange({"users", "selectedUser", "formName", "formEmail", "selectionHint", "actionButtonsDisabled"})
     public void updateUser() {
         if (selectedUser == null) {
             Clients.showNotification("Selecione um usuario para atualizar.");
             return;
         }
-        if (!isValidForm()) {
-            Clients.showNotification("Preencha nome e email.");
+        String validationError = validateForm();
+        if (validationError != null) {
+            Clients.showNotification(validationError);
             return;
         }
 
@@ -63,7 +72,7 @@ public class UserViewModel {
     }
 
     @Command
-    @NotifyChange({"users", "selectedUser", "formName", "formEmail"})
+    @NotifyChange({"users", "selectedUser", "formName", "formEmail", "selectionHint", "actionButtonsDisabled"})
     public void deleteUser() {
         if (selectedUser == null) {
             Clients.showNotification("Selecione um usuario para excluir.");
@@ -77,7 +86,7 @@ public class UserViewModel {
     }
 
     @Command
-    @NotifyChange({"selectedUser", "formName", "formEmail"})
+    @NotifyChange({"selectedUser", "formName", "formEmail", "selectionHint", "actionButtonsDisabled"})
     public void clearForm() {
         selectedUser = null;
         formName = "";
@@ -90,6 +99,17 @@ public class UserViewModel {
 
     public User getSelectedUser() {
         return selectedUser;
+    }
+
+    public String getSelectionHint() {
+        if (selectedUser == null) {
+            return "Selecione um registro para editar ou excluir.";
+        }
+        return "Registro selecionado: " + selectedUser.getName();
+    }
+
+    public boolean isActionButtonsDisabled() {
+        return selectedUser == null;
     }
 
     public String getFormName() {
@@ -108,9 +128,27 @@ public class UserViewModel {
         this.formEmail = formEmail;
     }
 
-    private boolean isValidForm() {
-        return formName != null && !formName.trim().isEmpty()
-                && formEmail != null && !formEmail.trim().isEmpty();
+    private String validateForm() {
+        if (formName == null || formName.trim().isEmpty()) {
+            return "Informe o nome.";
+        }
+        if (formEmail == null || formEmail.trim().isEmpty()) {
+            return "Informe o email.";
+        }
+
+        String normalizedName = formName.trim();
+        String normalizedEmail = formEmail.trim();
+
+        if (!NAME_PATTERN.matcher(normalizedName).matches()) {
+            return "Nome invalido. Use ao menos 2 letras e apenas caracteres de nome.";
+        }
+        if (!EMAIL_PATTERN.matcher(normalizedEmail).matches()) {
+            return "Email invalido. Exemplo: nome@dominio.com";
+        }
+
+        formName = normalizedName;
+        formEmail = normalizedEmail;
+        return null;
     }
 
     private void refreshUsers() {

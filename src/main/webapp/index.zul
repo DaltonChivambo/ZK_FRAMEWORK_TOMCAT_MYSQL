@@ -61,8 +61,7 @@
                 <hlayout hflex="1" valign="middle">
                     <label value="Usuarios cadastrados" sclass="section-title"/>
                     <space hflex="1"/>
-                    <label value="@load(vm.selectedUser == null ? 'Selecione um registro para editar ou excluir.' : 'Registro selecionado: '.concat(vm.selectedUser.name))"
-                           sclass="hint"/>
+                    <label value="@load(vm.selectionHint)" sclass="hint"/>
                 </hlayout>
 
                 <listbox model="@load(vm.users)"
@@ -101,8 +100,8 @@
 
                 <hlayout spacing="8px" style="flex-wrap: wrap;">
                     <button label="Adicionar" sclass="btn btn-primary" onClick="@command('addUser')"/>
-                    <button label="Atualizar" disabled="@load(vm.selectedUser == null)" onClick="@command('updateUser')"/>
-                    <button label="Excluir" disabled="@load(vm.selectedUser == null)" onClick="@command('deleteUser')"/>
+                    <button label="Atualizar" disabled="@load(vm.actionButtonsDisabled)" onClick="@command('updateUser')"/>
+                    <button label="Excluir" disabled="@load(vm.actionButtonsDisabled)" onClick="@command('deleteUser')"/>
                     <button label="Limpar" onClick="@command('clearForm')"/>
                 </hlayout>
             </vlayout>
